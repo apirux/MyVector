@@ -77,16 +77,16 @@ class MyVector
 	public:
 		
 		// size()
-		uint size() { return _size; }
+		uint size() const { return _size; }
 		
 		// max_size()
-		uint max_size() { return _max_size; }
+		uint max_size() const { return _max_size; }
 		
 		// capacity()
-		uint capacity() { return _max_size * sizeof(T); }
+		uint capacity() const { return _max_size * sizeof(T); }
 		
 		// empty()
-		bool empty() { return ( _size == 0 ); }
+		bool empty() const { return ( _size == 0 ); }
 		
 		// resize()
 		void resize( uint newSize )
@@ -122,10 +122,10 @@ class MyVector
 		
 		
 		// operator[] ...indexing
-		T& operator[]( uint index ) { return _array[ index ]; }
+		T& operator[]( uint index ) const { return _array[ index ]; }
 		
 		// at()
-		T& at( uint index )
+		T& at( uint index ) const
 		{
 			//bounds checking
 			if ( index >= _size )
@@ -135,10 +135,10 @@ class MyVector
 		}
 		
 		// front()
-		T& front() { return _array[0]; }
+		T& front() const { return _array[0]; }
 		
 		// back()
-		T& back() { return _array[ _size ]; }
+		T& back() const { return _array[ _size ]; }
 		
 		
 		// push_back()
@@ -228,7 +228,7 @@ class MyVector
 		}
 		
 		// operator== ...equal to
-		bool operator==( const MyVector<T>& myVec )
+		bool operator==( const MyVector<T>& myVec ) const
 		{
 			//early exit ...self comparison
 			if ( this == &myVec )
@@ -249,10 +249,10 @@ class MyVector
 		}
 		
 		// operator!= ...unequal to
-		bool operator!=( const MyVector<T>& myVec ) { return !(*this == myVec); }
+		bool operator!=( const MyVector<T>& myVec ) const { return !(*this == myVec); }
 		
 		// operator< ...less than
-		bool operator<( const MyVector<T>& myVec )
+		bool operator<( const MyVector<T>& myVec ) const
 		{
 			//variables
 			bool is_shorter = ( _size < myVec._size );		//for if all match
@@ -272,13 +272,13 @@ class MyVector
 		}
 		
 		// operator<= ...less or equal to
-		bool operator<=( const MyVector<T>& myVec ) { return !( myVec < *this ); }
+		bool operator<=( const MyVector<T>& myVec ) const { return !( myVec < *this ); }
 		
 		// operator> ...greater than
-		bool operator>( const MyVector<T>& myVec ) { return !( myVec < *this ); }
+		bool operator>( const MyVector<T>& myVec ) const { return !( myVec < *this ); }
 		
 		// operator>= ...greater or equal to
-		bool operator>=( const MyVector<T>& myVec ) { return !( *this < myVec ); }
+		bool operator>=( const MyVector<T>& myVec ) const { return !( *this < myVec ); }
 		
 	
 	// ------------------------------------------------------------ //
