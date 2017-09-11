@@ -1,8 +1,9 @@
 # Makefile...
 
 # MACRO: compiler, flags/switches
-CC=g++
-CFLAGS=-c -ansi -pedantic -Wall -Wextra
+CC=clang++
+CFLAGS=-std=c++11 -stdlib=libc++
+CWARN=-Weverything
 
 # SPECS: file_name, source_names --> w/o extensions
 FILE=myVec
@@ -12,7 +13,7 @@ SOURCE_01=MyVector
 all: $(FILE)
 
 $(FILE):
-	$(CC) -o $(FILE) main.cpp
+	$(CC) -o $(FILE) $(CFLAGS) main.cpp
 
 # $(FILE): $(SOURCE_01).o $(SOURCE_02).o
 	# $(CC) -o $(FILE) $(SOURCE_01).o $(SOURCE_02).o

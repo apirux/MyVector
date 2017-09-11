@@ -6,13 +6,15 @@
 // Apirux Boontherawara
 //
 
-#include <stdexcept>
+#include <stdexcept>		// out_of_range
+#include <algorithm>		// rotate
+#include <utility>			// forward
 #include <cstdint>			// UINT32_MAX
 //
 
 typedef unsigned int uint;
 
-template < class T >
+template < typename T >
 class MyVector
 {
 	///////////////
@@ -48,10 +50,14 @@ class MyVector
 		void reserve( uint sz );							// reserve()
 		
 		// indexing
-		T& operator[]( uint index ) const;					// [] ...indexing
-		T& at( uint index ) const;							// at()
-		T& front() const;									// front()
-		T& back() const;									// back()
+		const T& operator[]( uint index ) const;			// [] ...indexing
+		T& operator[]( uint index );						// [] ...indexing
+		const T& at( uint index ) const;					// at()
+		T& at( uint index );								// at()
+		const T& front() const;								// front()
+		T& front();											// front()
+		const T& back() const;								// back()
+		T& back();											// back()
 		
 		// add, remove, swap
 		void push_back( const T& val );						// push_back()
@@ -60,6 +66,11 @@ class MyVector
 		T* erase( T* first, T* last = nullptr );			// erase()
 		void swap( MyVector<T>& myVec );					// swap()
 		void clear();										// clear()
+		//
+		template < typename... Args >
+		T* emplace( const T* position, Args&&... args );	// emplace()
+		template < typename... Args >
+		void emplace_back( Args&&... args );				// emplace_back()
 		
 		// operator overloads
 		bool operator==( const MyVector<T>& myVec ) const;	// ==
@@ -88,7 +99,6 @@ class MyVector
 		T* _array;				//array of T-obj's
 		uint _size;				//num elements
 		uint _capacity;			//max elements without expanding array
-	
 };
 
 
@@ -104,25 +114,28 @@ class MyVector
 	////////////
 	
 	// Constructor ...default
-	template < class T >
+	template < typename T >
 	MyVector<T>::MyVector( uint sz /*= 10*/ ) 
-		: _size(0),
-		  _capacity(sz)
+		: _size(0)
+		, _capacity(sz)
 	{
 		//init array
 		_array = new T[ _capacity ];
 	}
 	
 	// Destructor
-	template < class T >
+	template < typename T >
 	MyVector<T>::~MyVector()
 	{
-		//array deletion
-		delete[] _array;
+		clear();				//deep destruction
+		delete[] _array;		//array deletion
+		
+		//Note:		Deep destruction is needed for cases where T-obj's 
+		//			have members with dynamic memory allocation
 	}
 	
 	// operator= ...assignment
-	template < class T >
+	template < typename T >
 	MyVector<T>& MyVector<T>::operator=( const MyVector<T>& myVec )
 	{
 		//early exit ...self assignment
@@ -151,30 +164,30 @@ class MyVector
 	///////////////
 	
 	// size()
-	template < class T >
+	template < typename T >
 	uint MyVector<T>::size() const
 	{ return _size; }
 	
 	// max_size()
 	// ...maximum quantity of elements MyVector can hold
 	// ...assumes: 32-bit
-	template < class T >
+	template < typename T >
 	uint MyVector<T>::max_size() const
 	{ return UINT32_MAX; }
 	
 	// capacity()
 	// ...current capacity in terms of # of elements
-	template < class T >
+	template < typename T >
 	uint MyVector<T>::capacity() const
 	{ return _capacity; }
 	
 	// empty()
-	template < class T >
+	template < typename T >
 	bool MyVector<T>::empty() const
 	{ return ( _size == 0 ); }
 	
 	// resize()
-	template < class T >
+	template < typename T >
 	void MyVector<T>::resize( uint newSize )
 	{
 		//grow capacity ...if applicable
@@ -191,7 +204,7 @@ class MyVector
 	}
 	
 	// shrink_to_fit()
-	template < class T >
+	template < typename T >
 	void MyVector<T>::shrink_to_fit()
 	{
 		//early-exit
@@ -200,7 +213,7 @@ class MyVector
 	}
 	
 	// reserve()
-	template < class T >
+	template < typename T >
 	void MyVector<T>::reserve( uint sz )
 	{
 		//grow capacity ...if applicable
@@ -210,13 +223,17 @@ class MyVector
 	
 	
 	// operator[] ...indexing
-	template < class T >
-	T& MyVector<T>::operator[]( uint index ) const
+	template < typename T >
+	const T& MyVector<T>::operator[]( uint index ) const
 	{ return _array[ index ]; }
+	//
+	template < typename T >
+	T& MyVector<T>::operator[]( uint index )
+	{ return const_cast<T&>( static_cast<const MyVector&>(*this)[index] ); }
 	
 	// at()
-	template < class T >
-	T& MyVector<T>::at( uint index ) const
+	template < typename T >
+	const T& MyVector<T>::at( uint index ) const
 	{
 		//bounds checking
 		if ( index >= _size )
@@ -224,20 +241,32 @@ class MyVector
 		
 		return _array[ index ];
 	}
+	//
+	template < typename T >
+	T& MyVector<T>::at( uint index )
+	{ return const_cast<T&>( static_cast<const MyVector&>(*this).at(index) ); }
 	
 	// front()
-	template < class T >
-	T& MyVector<T>::front() const
+	template < typename T >
+	const T& MyVector<T>::front() const
 	{ return _array[0]; }
+	//
+	template < typename T >
+	T& MyVector<T>::front()
+	{ return const_cast<T&>( static_cast<const MyVector&>(*this).front() ); }
 	
 	// back()
-	template < class T >
-	T& MyVector<T>::back() const
+	template < typename T >
+	const T& MyVector<T>::back() const
 	{ return _array[ _size ]; }
+	//
+	template < typename T >
+	T& MyVector<T>::back()
+	{ return const_cast<T&>( static_cast<const MyVector&>(*this).back() ); }
 	
 	
 	// push_back()
-	template < class T >
+	template < typename T >
 	void MyVector<T>::push_back( const T& val )
 	{
 		//grow capacity ...if applicable
@@ -250,16 +279,16 @@ class MyVector
 	}
 	
 	// pop_back()
-	template < class T >
+	template < typename T >
 	void MyVector<T>::pop_back()
 	{
-		//remove last element
+		//destroy & remove last element
 		_array[ _size - 1 ].~T();
 		--_size;
 	}
 	
 	// insert()
-	template < class T >
+	template < typename T >
 	T* MyVector<T>::insert( T* position, T val, uint n /*= 1*/ )
 	{
 		//variables
@@ -287,11 +316,14 @@ class MyVector
 		for ( uint i = posIndex; i < posIndex + n; ++i )
 			_array[i] = val;
 		
+		//update _size
+		_size += n;
+		
 		return ( _array + posIndex );
 	}
 	
 	// erase()
-	template < class T >
+	template < typename T >
 	T* MyVector<T>::erase( T* first, T* last /*= nullptr*/ )
 	{
 		//variables
@@ -311,7 +343,7 @@ class MyVector
 	}
 	
 	// swap()
-	template < class T >
+	template < typename T >
 	void MyVector<T>::swap( MyVector<T>& myVec )
 	{
 		//triangle swap
@@ -321,15 +353,53 @@ class MyVector
 	}
 	
 	// clear()
-	template < class T >
+	template < typename T >
 	void MyVector<T>::clear()
 	{
-		while ( _size > 0 )
+		while ( !empty() )
 			pop_back();
 	}
 	
+	
+	// emplace()
+	template < typename T >
+	template < typename... Args >
+	T* MyVector<T>::emplace( const T* position, Args&&... args )
+	{
+		//variables
+		T* pos = const_cast<T*>( position );			//insert position
+		T* end_ptr = _array + _size;
+		
+		//init and re-position new element
+		emplace_back( std::forward<Args>(args)... );	//init
+		std::rotate( pos, end_ptr - 1, end_ptr );		//re-position
+		
+		return pos;
+	}
+	
+	// emplace_back()
+	template < typename T >
+	template < typename... Args >
+	void MyVector<T>::emplace_back( Args&&... args )
+	{
+		//variables
+		T* end_ptr;
+		
+		//grow capacity ...if applicable
+		if ( _size == _capacity )
+			_resize_array( _capacity * 2 );
+		
+		//init in-place
+		end_ptr = _array + _size;						//1 past last element
+		new (end_ptr) T( std::forward<Args>(args)... );	//placement new w/ args
+		
+		//update _size
+		++_size;
+	}
+	
+	
 	// operator== ...equal to
-	template < class T >
+	template < typename T >
 	bool MyVector<T>::operator==( const MyVector<T>& myVec ) const
 	{
 		//early exit ...self comparison
@@ -351,12 +421,12 @@ class MyVector
 	}
 	
 	// operator!= ...unequal to
-	template < class T >
+	template < typename T >
 	bool MyVector<T>::operator!=( const MyVector<T>& myVec ) const
 	{ return !(*this == myVec); }
 	
 	// operator< ...less than
-	template < class T >
+	template < typename T >
 	bool MyVector<T>::operator<( const MyVector<T>& myVec ) const
 	{
 		//variables
@@ -377,17 +447,17 @@ class MyVector
 	}
 	
 	// operator<= ...less or equal to
-	template < class T >
+	template < typename T >
 	bool MyVector<T>::operator<=( const MyVector<T>& myVec ) const
 	{ return !( myVec < *this ); }
 	
 	// operator> ...greater than
-	template < class T >
+	template < typename T >
 	bool MyVector<T>::operator>( const MyVector<T>& myVec ) const
 	{ return !( myVec < *this ); }
 	
 	// operator>= ...greater or equal to
-	template < class T >
+	template < typename T >
 	bool MyVector<T>::operator>=( const MyVector<T>& myVec ) const
 	{ return !( *this < myVec ); }
 	
@@ -398,14 +468,14 @@ class MyVector
 	/////////////
 	
 	// _resize_array()
-	template < class T >
+	template < typename T >
 	void MyVector<T>::_resize_array( uint newSize )
 	{
 		//variables
 		T* arr = new T[ newSize ];			//new array
 		
 		//copy elements to new array ...truncate if applicable
-		_size = ( _size < newSize ) ? _size : newSize;
+		_size = ( _size < newSize ) ? _size : newSize;			//min()
 		for ( uint i = 0; i < _size; ++i )
 			arr[i] = _array[i];
 		

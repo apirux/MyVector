@@ -7,9 +7,11 @@
 \f0\b\fs24 \cf0 To Fix
 \b0 \
 \
-non-const alt	ver	\'85for indexing functions (check cpp ref)\
-const T&		\'85for const mem functions that return a ref or a ptr\
-emplace_back()	\'85C++11 feature, implement (and emplace() as well)\
+\strike \strikec0 deep deletion	\'85clear() and pop_back(), call clear() in destructor\strike0\striked0 \
+\
+\strike \strikec0 non-const alt	ver	\'85for indexing functions (check cpp ref)\strike0\striked0 \
+\strike \strikec0 const T&		\'85for const mem functions that return a ref or a ptr\strike0\striked0 \
+\strike \strikec0 emplace_back()	\'85C++11 feature, implement (and emplace() as well)\strike0\striked0 \
 move constructor	\'85C++11 feature, learn and implement\
 move assignment	\'85C++11 feature, learn and implement\
 \
@@ -31,4 +33,5 @@ move_only struct	\'85make MyVector work with the provided struct as \'92T\'92 (u
 \
 	Note:	\'93= delete\'94 at the end of the function declaration means omit/ban that function\
 \
+overload variants	\'85implement some key overload variants (i.e. resize() with init value)\
 }
