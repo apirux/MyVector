@@ -30,8 +30,12 @@ class MyVector
 	
 	public:
 		MyVector( uint sz = 10 );							// Constructor ...default
-		~MyVector();										// Destructor
+		MyVector( const MyVector<T>& myVec );				// Constructor ...copy
+		MyVector( MyVector<T>&& myVec );					// Constructor (move)
+		virtual ~MyVector();								// Destructor
+		//
 		MyVector<T>& operator=( const MyVector<T>& myVec );	// = ...assignment
+		MyVector<T>& operator=( MyVector<T>&& myVec );		// = ...assignment (move)
 		
 	// ---------------------------------------------------------------------- //
 	
@@ -86,8 +90,10 @@ class MyVector
 	// HELPERS //
 	/////////////
 	
-	private:
-		void _resize_array( uint newSize );				// _resize_array()
+	protected:
+		void _free_array();											// _free_array()
+		void _copy_elements( const MyVector& myVec, uint num = 0 );	// _copy_elements
+		void _resize_array( uint newSize );							// _resize_array()
 	
 	// ---------------------------------------------------------------------- //
 	
@@ -123,16 +129,32 @@ class MyVector
 		_array = new T[ _capacity ];
 	}
 	
+	// Constructor (copy)
+	template < typename T >
+	MyVector<T>::MyVector( const MyVector<T>& myVec ) 
+		: _size( myVec.size() )
+		, _capacity( myVec.capacity() )
+	{
+		//init array
+		_array = new T[ _capacity ];
+		
+		//copy elements
+		for ( uint i = 0; i < _size; ++i )
+			_array[i] = myVec[i];
+	}
+	
+	// Constructor (move)
+	template < typename T >
+	MyVector<T>::MyVector( MyVector<T>&& myVec ) 
+		: _size( myVec.size() )
+		, _capacity( myVec.capacity() )
+		, _array( myVec._array )
+	{ myVec._array = nullptr; }
+	
 	// Destructor
 	template < typename T >
 	MyVector<T>::~MyVector()
-	{
-		clear();				//deep destruction
-		delete[] _array;		//array deletion
-		
-		//Note:		Deep destruction is needed for cases where T-obj's 
-		//			have members with dynamic memory allocation
-	}
+	{ _free_array(); }
 	
 	// operator= ...assignment
 	template < typename T >
@@ -143,9 +165,9 @@ class MyVector
 			return *this;
 		
 		//free old memory
-		delete[] _array;
+		_free_array();
 		
-		//init new values
+		//re-init new values
 		_size = myVec.size();
 		_capacity = myVec.capacity();
 		_array = new T[ _capacity ];
@@ -153,6 +175,28 @@ class MyVector
 		//copy elements
 		for ( uint i = 0; i < _size; ++i )
 			_array[i] = myVec[i];
+		
+		return *this;
+	}
+	
+	// operator= ...assignment (move)
+	template < typename T >
+	MyVector<T>& MyVector<T>::operator=( MyVector<T>&& myVec )
+	{
+		//early exit ...self assignment
+		if ( this == &myVec )
+			return *this;
+		
+		//free old memory
+		_free_array();
+		
+		//re-init new values
+		_size = myVec.size();
+		_capacity = myVec.capacity();
+		
+		//move array
+		_array = myVec._array;
+		myVec = nullptr;
 		
 		return *this;
 	}
@@ -467,24 +511,40 @@ class MyVector
 	// HELPERS //
 	/////////////
 	
+	// _free_array()
+	template < typename T >
+	void MyVector<T>::_free_array()
+	{
+		//free memory ...applicable
+		if ( capacity() > 0 )
+		{
+			clear();				//deep destruction
+			delete[] _array;		//array deletion
+		}
+		
+		//Note:		Deep destruction is needed for cases where T-obj's 
+		//			have members with dynamic memory allocation
+	}
+	
 	// _resize_array()
 	template < typename T >
-	void MyVector<T>::_resize_array( uint newSize )
+	void MyVector<T>::_resize_array( uint newCapacity )
 	{
 		//variables
-		T* arr = new T[ newSize ];			//new array
+		T* arr = new T[ newCapacity ];									//new array
+		uint num_copy = ( _size < newCapacity ) ? _size : newCapacity;	//# elements to copy
 		
 		//copy elements to new array ...truncate if applicable
-		_size = ( _size < newSize ) ? _size : newSize;			//min()
-		for ( uint i = 0; i < _size; ++i )
+		for ( uint i = 0; i < num_copy; ++i )
 			arr[i] = _array[i];
 		
 		//assign new array ...after freeing old memory
-		delete[] _array;
+		_free_array();
 		_array = arr;
 		
-		//update capacity
-		_capacity = newSize;
+		//update values
+		_size = num_copy;
+		_capacity = newCapacity;
 	}
 	
 	

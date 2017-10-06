@@ -8,12 +8,12 @@
 \b0 \
 \
 \strike \strikec0 deep deletion	\'85clear() and pop_back(), call clear() in destructor\strike0\striked0 \
-\
 \strike \strikec0 non-const alt	ver	\'85for indexing functions (check cpp ref)\strike0\striked0 \
 \strike \strikec0 const T&		\'85for const mem functions that return a ref or a ptr\strike0\striked0 \
 \strike \strikec0 emplace_back()	\'85C++11 feature, implement (and emplace() as well)\strike0\striked0 \
-move constructor	\'85C++11 feature, learn and implement\
-move assignment	\'85C++11 feature, learn and implement\
+\strike \strikec0 move constructor	\'85C++11 feature, learn and implement\strike0\striked0 \
+\strike \strikec0 move assignment	\'85C++11 feature, learn and implement\strike0\striked0 \
+\strike \strikec0 test move		\'85test move semantic features\strike0\striked0 \
 \
 opt memory alloc	\'85constructor starts w/o array alloc, alloc on insert()/push_back()/emplace_back()\
 opt capacity grow	\'85first alloc should jump to a small # (i.e. 10), grow to 2*(size + n) for insert, check max_size\
@@ -34,4 +34,9 @@ move_only struct	\'85make MyVector work with the provided struct as \'92T\'92 (u
 	Note:	\'93= delete\'94 at the end of the function declaration means omit/ban that function\
 \
 overload variants	\'85implement some key overload variants (i.e. resize() with init value)\
+add \'93this->\'94		\'85since vector code will be part of a library\
+match std		\'85implement the rest of the std::vector interface (except allocator)\
+\
+More stuff to research:\
++ sfinae			\'85substitution failure is not an error\
 }
